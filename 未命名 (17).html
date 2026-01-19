@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增供应商 - 供应商管理系统</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        success: '#00B42A',
+                        warning: '#FF7D00',
+                        danger: '#F53F3F',
+                        gray: {
+                            100: '#F2F3F5',
+                            200: '#E5E6EB',
+                            300: '#C9CDD4',
+                            400: '#86909C',
+                            500: '#4E5969',
+                            600: '#1D2129',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            /* 基础样式 */
+            .badge {
+                @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+            }
+            .badge-required {
+                @apply bg-danger/10 text-danger;
+            }
+            /* 表单专属样式 */
+            .form-container {
+                @apply bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden;
+            }
+            .form-header {
+                @apply px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50;
+            }
+            .form-group {
+                @apply mb-6 px-6;
+            }
+            .form-group-title {
+                @apply text-base font-medium text-gray-600 mb-4 flex items-center gap-2;
+            }
+            .form-group-title i {
+                @apply text-primary;
+            }
+            .form-grid {
+                @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+            }
+            .form-item {
+                @apply col-span-1;
+            }
+            .form-item-full {
+                @apply col-span-1 md:col-span-2 lg:col-span-3;
+            }
+            .form-label {
+                @apply block text-sm font-medium text-gray-700 mb-1 flex items-center;
+            }
+            .form-label-required::after {
+                @apply content-['*'] text-danger ml-1;
+            }
+            .form-input, .form-select, .form-textarea {
+                @apply w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm;
+            }
+            .form-input-error, .form-select-error, .form-textarea-error {
+                @apply border-danger focus:ring-danger/20 focus:border-danger;
+            }
+            .form-error-text {
+                @apply text-danger text-xs mt-1 hidden;
+            }
+            .form-error-text.show {
+                @apply block;
+            }
+            .form-actions {
+                @apply px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50;
+            }
+            .form-btn {
+                @apply px-6 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2;
+            }
+            .form-btn-primary {
+                @apply bg-primary text-white hover:bg-primary/90;
+            }
+            .form-btn-default {
+                @apply bg-white border border-gray-200 text-gray-600 hover:bg-gray-50;
+            }
+            /* 文件上传样式 */
+            .upload-area {
+                @apply border-2 border-dashed border-gray-200 rounded-md p-6 text-center hover:border-primary transition-colors cursor-pointer;
+            }
+            .upload-area i {
+                @apply text-2xl text-gray-400 mb-2;
+            }
+            .upload-area-text {
+                @apply text-sm text-gray-500 mb-1;
+            }
+            .upload-area-tip {
+                @apply text-xs text-gray-400;
+            }
+            .upload-file-list {
+                @apply mt-3;
+            }
+            .upload-file-item {
+                @apply flex items-center gap-3 p-3 border border-gray-200 rounded mb-2;
+            }
+            .upload-file-icon {
+                @apply text-xl text-primary;
+            }
+            .upload-file-info {
+                @apply flex-1;
+            }
+            .upload-file-name {
+                @apply text-sm font-medium;
+            }
+            .upload-file-size {
+                @apply text-xs text-gray-400;
+            }
+            .upload-file-actions {
+                @apply flex gap-2;
+            }
+            .upload-file-actions button {
+                @apply text-gray-400 hover:text-danger text-sm;
+            }
+            /* 复选框组样式 */
+            .checkbox-group {
+                @apply flex flex-wrap gap-3;
+            }
+            .checkbox-item {
+                @apply flex items-center gap-2;
+            }
+            .checkbox-input {
+                @apply w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary/20;
+            }
+            .checkbox-label {
+                @apply text-sm text-gray-600;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-600">
+    <!-- 顶部导航 -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-building-columns text-primary text-xl"></i>
+                <h1 class="text-lg font-semibold">供应商管理系统</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="relative hidden md:block">
+                    <input type="text" placeholder="全局搜索..." class="pl-8 pr-4 py-1.5 rounded border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm w-48">
+                    <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                </div>
+                <div class="flex items-center gap-2">
+                    <img src="https://picsum.photos/32/32" alt="用户头像" class="w-8 h-8 rounded-full object-cover">
+                    <span class="text-sm">系统管理员</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 面包屑 -->
+    <div class="container mx-auto px-4 py-3">
+        <nav class="flex text-sm text-gray-400" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li><a href="#" class="hover:text-primary">首页</a></li>
+                <li><i class="fa-solid fa-chevron-right mx-2 text-xs"></i></li>
+                <li><a href="#" class="hover:text-primary">供应商管理</a></li>
+                <li><i class="fa-solid fa-chevron-right mx-2 text-xs"></i></li>
+                <li class="text-gray-600 font-medium">新增供应商</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- 主内容区 -->
+    <main class="container mx-auto px-4 py-6">
+        <div class="form-container">
+            <!-- 表单头部 -->
+            <div class="form-header">
+                <h2 class="text-lg font-semibold">新增供应商</h2>
+            </div>
+
+            <!-- 表单主体 -->
+            <form id="supplierForm">
+                <!-- 基础信息组 -->
+                <div class="form-group">
+                    <div class="form-group-title">
+                        <i class="fa-solid fa-id-card"></i>
+                        基础信息
+                    </div>
+                    <div class="form-grid">
+                        <!-- 供应商名称 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">供应商名称</label>
+                            <input type="text" class="form-input" placeholder="请输入供应商全称">
+                            <div class="form-error-text">供应商名称不能为空</div>
+                        </div>
+                        <!-- 供应商简称 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">供应商简称</label>
+                            <input type="text" class="form-input" placeholder="请输入供应商简称">
+                            <div class="form-error-text">供应商简称不能为空</div>
+                        </div>
+                        <!-- 供应商名称（英文） -->
+                        <div class="form-item" id="englishNameItem">
+                            <label class="form-label">供应商名称（英文）</label>
+                            <input type="text" class="form-input" placeholder="请输入供应商英文名称">
+                            <div class="form-error-text"></div>
+                        </div>
+                        <!-- 供应商归属类型 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">供应商归属类型</label>
+                            <select class="form-select" id="supplierBelongType">
+                                <option value="">请选择归属类型</option>
+                                <option value="0">外部单位</option>
+                                <option value="1">内部单位</option>
+                            </select>
+                            <div class="form-error-text">供应商归属类型不能为空</div>
+                        </div>
+                        <!-- 供应商交易类型 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">供应商交易类型</label>
+                            <select class="form-select" id="supplierTradeType">
+                                <option value="">请选择交易类型</option>
+                                <option value="采购">采购</option>
+                                <option value="服务">服务</option>
+                            </select>
+                            <div class="form-error-text">供应商交易类型不能为空</div>
+                        </div>
+                        <!-- 外付类型 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">外付类型</label>
+                            <select class="form-select">
+                                <option value="">请选择外付类型</option>
+                                <option value="分包">分包</option>
+                                <option value="分成">分成</option>
+                                <option value="佣金">佣金</option>
+                                <option value="采购">采购</option>
+                            </select>
+                            <div class="form-error-text">外付类型不能为空</div>
+                        </div>
+                        <!-- 供应商分类 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">供应商分类</label>
+                            <select class="form-select">
+                                <option value="">请选择供应商分类</option>
+                                <option value="中央企业">中央企业</option>
+                                <option value="地方国企">地方国企</option>
+                                <option value="中央部委">中央部委</option>
+                                <option value="地方政府">地方政府</option>
+                                <option value="民营企业">民营企业</option>
+                                <option value="事业单位">事业单位</option>
+                                <option value="个体工商户">个体工商户</option>
+                                <option value="公共组织">公共组织</option>
+                                <option value="外资企业">外资企业</option>
+                                <option value="个人客商">个人客商</option>
+                                <option value="虚拟客商">虚拟客商</option>
+                                <option value="其他">其他</option>
+                            </select>
+                            <div class="form-error-text">供应商分类不能为空</div>
+                        </div>
+                        <!-- 信用代码类型 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">信用代码类型</label>
+                            <select class="form-select" id="creditCodeType">
+                                <option value="">请选择信用代码类型</option>
+                                <option value="01">01 统一社会信用代码</option>
+                                <option value="02">02 公民身份证代码</option>
+                                <option value="09">09 其他</option>
+                                <option value="10">10 护照</option>
+                                <option value="04">04 对白编码</option>
+                                <option value="08">08 系统生成代码</option>
+                            </select>
+                            <div class="form-error-text">信用代码类型不能为空</div>
+                        </div>
+                        <!-- 信用代码 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">信用代码</label>
+                            <input type="text" class="form-input" id="creditCode" placeholder="请输入对应类型的信用代码">
+                            <div class="form-error-text">信用代码不能为空</div>
+                        </div>
+                        <!-- 法定代表人 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">法定代表人</label>
+                            <input type="text" class="form-input" placeholder="请输入法定代表人姓名">
+                            <div class="form-error-text">法定代表人不能为空</div>
+                        </div>
+                        <!-- 注册资本 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">注册资本（万元）</label>
+                            <input type="number" class="form-input" placeholder="请输入注册资本金额">
+                            <div class="form-error-text">注册资本不能为空</div>
+                        </div>
+                        <!-- 注册币种 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">注册币种</label>
+                            <select class="form-select">
+                                <option value="">请选择注册币种</option>
+                                <option value="人民币">人民币</option>
+                                <option value="美元">美元</option>
+                                <option value="欧元">欧元</option>
+                                <option value="港币">港币</option>
+                                <option value="其他">其他</option>
+                            </select>
+                            <div class="form-error-text">注册币种不能为空</div>
+                        </div>
+                        <!-- 注册成立单位 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">注册成立单位</label>
+                            <input type="text" class="form-input" placeholder="请输入批准成立的主管单位">
+                            <div class="form-error-text">注册成立单位不能为空</div>
+                        </div>
+                        <!-- 成立时间 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">成立时间</label>
+                            <input type="date" class="form-input">
+                            <div class="form-error-text">成立时间不能为空</div>
+                        </div>
+                        <!-- 风险等级 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">风险等级</label>
+                            <select class="form-select">
+                                <option value="">请选择风险等级</option>
+                                <option value="0">0 无风险</option>
+                                <option value="1">1 低风险</option>
+                                <option value="2">2 中风险</option>
+                                <option value="3">3 高风险</option>
+                            </select>
+                            <div class="form-error-text">风险等级不能为空</div>
+                        </div>
+                        <!-- 风险程度 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">风险程度</label>
+                            <select class="form-select" id="riskLevel">
+                                <option value="">请选择风险程度</option>
+                                <option value="0">0 待禁用</option>
+                                <option value="2">2 已禁用</option>
+                            </select>
+                            <div class="form-error-text">风险程度不能为空</div>
+                        </div>
+                        <!-- 禁用说明 -->
+                        <div class="form-item" id="disableReasonItem">
+                            <label class="form-label">禁用说明</label>
+                            <textarea class="form-textarea" rows="3" placeholder="风险程度为已禁用时必填"></textarea>
+                            <div class="form-error-text">禁用说明不能为空</div>
+                        </div>
+                        <!-- 供应商有效期 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">供应商有效期</label>
+                            <select class="form-select">
+                                <option value="">请选择有效期</option>
+                                <option value="1">1年</option>
+                                <option value="2">2年</option>
+                                <option value="3">3年</option>
+                                <option value="长期">长期</option>
+                            </select>
+                            <div class="form-error-text">供应商有效期不能为空</div>
+                        </div>
+                        <!-- 时区 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">时区</label>
+                            <select class="form-select">
+                                <option value="">请选择时区</option>
+                                <option value="UTC+8">UTC+8 (中国标准时间)</option>
+                                <option value="UTC+7">UTC+7 (东南亚)</option>
+                                <option value="UTC+0">UTC+0 (格林威治时间)</option>
+                                <option value="UTC-5">UTC-5 (美国东部时间)</option>
+                                <option value="其他">其他</option>
+                            </select>
+                            <div class="form-error-text">时区不能为空</div>
+                        </div>
+                        <!-- 主要业务语言 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">主要业务语言</label>
+                            <select class="form-select">
+                                <option value="">请选择主要业务语言</option>
+                                <option value="中文">中文</option>
+                                <option value="英文">英文</option>
+                                <option value="日文">日文</option>
+                                <option value="韩文">韩文</option>
+                                <option value="其他">其他</option>
+                            </select>
+                            <div class="form-error-text">主要业务语言不能为空</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 供应商业务类型 -->
+                <div class="form-group">
+                    <div class="form-group-title">
+                        <i class="fa-solid fa-briefcase"></i>
+                        供应商业务类型
+                    </div>
+                    <div class="form-item">
+                        <label class="form-label form-label-required">业务类型（可多选）</label>
+                        <div class="checkbox-group mb-2">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="type1" class="checkbox-input" value="服务提供商">
+                                <label for="type1" class="checkbox-label">服务提供商</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="type2" class="checkbox-input" value="分包方">
+                                <label for="type2" class="checkbox-label">分包方</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="type3" class="checkbox-input" value="物资供应商">
+                                <label for="type3" class="checkbox-label">物资供应商</label>
+                            </div>
+                        </div>
+                        <div class="form-error-text">至少选择一种业务类型</div>
+                    </div>
+                </div>
+
+                <!-- 资质文件上传 -->
+                <div class="form-group" id="fileUploadGroup">
+                    <div class="form-group-title">
+                        <i class="fa-solid fa-file-upload"></i>
+                        资质文件上传
+                    </div>
+                    <div class="form-grid">
+                        <!-- 服务提供商文件 -->
+                        <div class="form-item-full" id="serviceProviderFiles">
+                            <label class="form-label">服务提供商资质文件</label>
+                            <div class="upload-area">
+                                <i class="fa-solid fa-cloud-upload"></i>
+                                <div class="upload-area-text">点击或拖拽文件至此处上传</div>
+                                <div class="upload-area-tip">支持 PDF、JPG、PNG 格式，单个文件不超过 10MB</div>
+                                <input type="file" class="hidden" multiple accept=".pdf,.jpg,.jpeg,.png">
+                            </div>
+                            <div class="upload-file-list">
+                                <!-- 示例已上传文件 -->
+                                <div class="upload-file-item">
+                                    <div class="upload-file-icon">
+                                        <i class="fa-solid fa-file-pdf"></i>
+                                    </div>
+                                    <div class="upload-file-info">
+                                        <div class="upload-file-name">服务能力证明.pdf</div>
+                                        <div class="upload-file-size">2.5 MB</div>
+                                    </div>
+                                    <div class="upload-file-actions">
+                                        <button type="button"><i class="fa-solid fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 分包方文件 -->
+                        <div class="form-item-full" id="subcontractorFiles">
+                            <label class="form-label">分包方资质文件</label>
+                            <div class="upload-area">
+                                <i class="fa-solid fa-cloud-upload"></i>
+                                <div class="upload-area-text">点击或拖拽文件至此处上传</div>
+                                <div class="upload-area-tip">支持 PDF、JPG、PNG 格式，单个文件不超过 10MB</div>
+                                <input type="file" class="hidden" multiple accept=".pdf,.jpg,.jpeg,.png">
+                            </div>
+                        </div>
+
+                        <!-- 物资供应商文件 -->
+                        <div class="form-item-full" id="goodsSupplierFiles">
+                            <label class="form-label">物资供应商资质文件</label>
+                            <div class="upload-area">
+                                <i class="fa-solid fa-cloud-upload"></i>
+                                <div class="upload-area-text">点击或拖拽文件至此处上传</div>
+                                <div class="upload-area-tip">支持 PDF、JPG、PNG 格式，单个文件不超过 10MB</div>
+                                <input type="file" class="hidden" multiple accept=".pdf,.jpg,.jpeg,.png">
+                            </div>
+                        </div>
+
+                        <!-- 评定文件 -->
+                        <div class="form-item-full">
+                            <label class="form-label form-label-required">评定文件</label>
+                            <div class="upload-area">
+                                <i class="fa-solid fa-cloud-upload"></i>
+                                <div class="upload-area-text">点击或拖拽文件至此处上传</div>
+                                <div class="upload-area-tip">支持 PDF、JPG、PNG 格式，单个文件不超过 10MB</div>
+                                <input type="file" class="hidden" multiple accept=".pdf,.jpg,.jpeg,.png" required>
+                            </div>
+                            <div class="form-error-text">评定文件不能为空</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 地址信息 -->
+                <div class="form-group">
+                    <div class="form-group-title">
+                        <i class="fa-solid fa-map-marker-alt"></i>
+                        地址信息
+                    </div>
+                    <div class="form-grid">
+                        <!-- 国别 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">国别</label>
+                            <select class="form-select" id="country">
+                                <option value="">请选择国别</option>
+                                <option value="中国">中国</option>
+                                <option value="美国">美国</option>
+                                <option value="日本">日本</option>
+                                <option value="韩国">韩国</option>
+                                <option value="其他">其他</option>
+                            </select>
+                            <div class="form-error-text">国别不能为空</div>
+                        </div>
+                        <!-- 国家/地区 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">国家/地区</label>
+                            <select class="form-select" id="region">
+                                <option value="">请先选择国别</option>
+                            </select>
+                            <div class="form-error-text">国家/地区不能为空</div>
+                        </div>
+                        <!-- 省、直辖市 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">省、直辖市</label>
+                            <select class="form-select" id="province">
+                                <option value="">请先选择国家/地区</option>
+                            </select>
+                            <div class="form-error-text">省、直辖市不能为空</div>
+                        </div>
+                        <!-- 市（省级） -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">市（省级）</label>
+                            <select class="form-select" id="city">
+                                <option value="">请先选择省、直辖市</option>
+                            </select>
+                            <div class="form-error-text">市（省级）不能为空</div>
+                        </div>
+                        <!-- 县/区 -->
+                        <div class="form-item">
+                            <label class="form-label form-label-required">县/直辖市区/市（省级）区</label>
+                            <select class="form-select" id="district">
+                                <option value="">请先选择市（省级）</option>
+                            </select>
+                            <div class="form-error-text">县/区不能为空</div>
+                        </div>
+                        <!-- 公司网址 -->
+                        <div class="form-item">
+                            <label class="form-label">公司网址</label>
+                            <input type="url" class="form-input" placeholder="请输入公司官网地址">
+                        </div>
+                        <!-- 注册地址 -->
+                        <div class="form-item-full">
+                            <label class="form-label form-label-required">注册地址</label>
+                            <input type="text" class="form-input" placeholder="请输入详细注册地址">
+                            <div class="form-error-text">注册地址不能为空</div>
+                        </div>
+                        <!-- 注册地址（英文） -->
+                        <div class="form-item-full">
+                            <label class="form-label">注册地址（英文）</label>
+                            <input type="text" class="form-input" placeholder="涉外业务必填">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 经营范围 -->
+                <div class="form-group">
+                    <div class="form-group-title">
+                        <i class="fa-solid fa-list-alt"></i>
+                        经营范围
+                    </div>
+                    <div class="form-grid">
+                        <!-- 经营范围 -->
+                        <div class="form-item-full">
+                            <label class="form-label form-label-required">经营范围</label>
+                            <textarea class="form-textarea" rows="4" placeholder="请输入详细经营范围"></textarea>
+                            <div class="form-error-text">经营范围不能为空</div>
+                        </div>
+                        <!-- 经营范围（英文） -->
+                        <div class="form-item-full">
+                            <label class="form-label">经营范围（英文）</label>
+                            <textarea class="form-textarea" rows="4" placeholder="涉外业务必填"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 合格评定信息 -->
+                <div class="form-group">
+                    <div class="form-group-title">
+                        <i class="fa-solid fa-check-circle"></i>
+                        合格评定信息
+                    </div>
+                    <div class="form-grid">
+                        <!-- 供应商合格评定信息 -->
+                        <div class="form-item-full">
+                            <label class="form-label form-label-required">供应商合格评定信息</label>
+                            <textarea class="form-textarea" rows="4" placeholder="请填写供应商资质合格评定的相关说明或结果"></textarea>
+                            <div class="form-error-text">供应商合格评定信息不能为空</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 表单操作按钮 -->
+                <div class="form-actions">
+                    <button type="button" class="form-btn form-btn-default">
+                        <i class="fa-solid fa-arrow-left"></i> 返回列表
+                    </button>
+                    <button type="button" class="form-btn form-btn-default">
+                        <i class="fa-solid fa-save"></i> 保存草稿
+                    </button>
+                    <button type="submit" class="form-btn form-btn-primary">
+                        <i class="fa-solid fa-check"></i> 提交审核
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 py-4 mt-6">
+        <div class="container mx-auto px-4 text-center text-sm text-gray-400">
+            © 2026 供应商管理系统 - 版权所有
+        </div>
+    </footer>
+
+    <script>
+        // 1. 交易类型联动：服务商显示英文名称输入框
+        const tradeTypeSelect = document.getElementById('supplierTradeType');
+        const englishNameItem = document.getElementById('englishNameItem');
+        
+        tradeTypeSelect.addEventListener('change', function() {
+            if (this.value === '服务') {
+                englishNameItem.style.display = 'block';
+                // 设为必填
+                englishNameItem.querySelector('.form-label').classList.add('form-label-required');
+                englishNameItem.querySelector('.form-error-text').textContent = '供应商英文名称不能为空';
+            } else {
+                englishNameItem.style.display = 'block'; // 保持显示但非必填
+                englishNameItem.querySelector('.form-label').classList.remove('form-label-required');
+                englishNameItem.querySelector('.form-error-text').textContent = '';
+            }
+        });
+
+        // 2. 风险程度联动：已禁用显示禁用说明
+        const riskLevelSelect = document.getElementById('riskLevel');
+        const disableReasonItem = document.getElementById('disableReasonItem');
+        
+        riskLevelSelect.addEventListener('change', function() {
+            if (this.value === '2') {
+                disableReasonItem.querySelector('.form-label').classList.add('form-label-required');
+                disableReasonItem.querySelector('.form-error-text').textContent = '禁用说明不能为空';
+            } else {
+                disableReasonItem.querySelector('.form-label').classList.remove('form-label-required');
+                disableReasonItem.querySelector('.form-error-text').textContent = '';
+            }
+        });
+
+        // 3. 业务类型复选框联动：显示对应文件上传区域
+        const businessTypeCheckboxes = document.querySelectorAll('.checkbox-input');
+        const serviceProviderFiles = document.getElementById('serviceProviderFiles');
+        const subcontractorFiles = document.getElementById('subcontractorFiles');
+        const goodsSupplierFiles = document.getElementById('goodsSupplierFiles');
+
+        // 初始化隐藏所有业务类型文件区域
+        serviceProviderFiles.style.display = 'none';
+        subcontractorFiles.style.display = 'none';
+        goodsSupplierFiles.style.display = 'none';
+
+        businessTypeCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                // 根据选中的业务类型显示对应文件区域
+                if (this.value === '服务提供商') {
+                    serviceProviderFiles.style.display = this.checked ? 'block' : 'none';
+                } else if (this.value === '分包方') {
+                    subcontractorFiles.style.display = this.checked ? 'block' : 'none';
+                } else if (this.value === '物资供应商') {
+                    goodsSupplierFiles.style.display = this.checked ? 'block' : 'none';
+                }
+            });
+        });
+
+        // 4. 地址联动（示例：中国地区联动）
+        const countrySelect = document.getElementById('country');
+        const regionSelect = document.getElementById('region');
+        const provinceSelect = document.getElementById('province');
+        const citySelect = document.getElementById('city');
+        const districtSelect = document.getElementById('district');
+
+        // 国别变更联动
+        countrySelect.addEventListener('change', function() {
+            // 清空下级选项
+            regionSelect.innerHTML = '';
+            provinceSelect.innerHTML = '';
+            citySelect.innerHTML = '';
+            districtSelect.innerHTML = '';
+
+            if (this.value === '中国') {
+                // 添加中国地区选项
+                const regionOptions = [
+                    { value: '', text: '请选择' },
+                    { value: '中国大陆', text: '中国大陆' },
+                    { value: '中国香港', text: '中国香港' },
+                    { value: '中国澳门', text: '中国澳门' },
+                    { value: '中国台湾', text: '中国台湾' }
+                ];
+                
+                regionOptions.forEach(option => {
+                    const opt = document.createElement('option');
+                    opt.value = option.value;
+                    opt.textContent = option.text;
+                    regionSelect.appendChild(opt);
+                });
+            } else {
+                // 其他国家
+                const opt = document.createElement('option');
+                opt.value = this.value;
+                opt.textContent = this.value;
+                regionSelect.appendChild(opt);
+                
+                // 隐藏省级以下选择框（简化示例）
+                provinceSelect.innerHTML = '<option value="' + this.value + '">' + this.value + '</option>';
+                citySelect.innerHTML = '<option value="' + this.value + '">' + this.value + '</option>';
+                districtSelect.innerHTML = '<option value="' + this.value + '">' + this.value + '</option>';
+            }
+        });
+
+        // 地区变更联动（中国大陆）
+        regionSelect.addEventListener('change', function() {
+            if (this.value === '中国大陆') {
+                // 示例：添加部分省份
+                const provinceOptions = [
+                    { value: '', text: '请选择' },
+                    { value: '北京市', text: '北京市' },
+                    { value: '上海市', text: '上海市' },
+                    { value: '广东省', text: '广东省' },
+                    { value: '江苏省', text: '江苏省' }
+                ];
+                
+                provinceSelect.innerHTML = '';
+                provinceOptions.forEach(option => {
+                    const opt = document.createElement('option');
+                    opt.value = option.value;
+                    opt.textContent = option.text;
+                    provinceSelect.appendChild(opt);
+                });
+            } else {
+                // 港澳台地区
+                provinceSelect.innerHTML = '<option value="' + this.value + '">' + this.value + '</option>';
+                citySelect.innerHTML = '<option value="' + this.value + '">' + this.value + '</option>';
+                districtSelect.innerHTML = '<option value="' + this.value + '">' + this.value + '</option>';
+            }
+        });
+
+        // 省份变更联动
+        provinceSelect.addEventListener('change', function() {
+            citySelect.innerHTML = '';
+            districtSelect.innerHTML = '';
+
+            if (this.value === '北京市') {
+                const cityOptions = [
+                    { value: '', text: '请选择' },
+                    { value: '北京市', text: '北京市' }
+                ];
+                
+                cityOptions.forEach(option => {
+                    const opt = document.createElement('option');
+                    opt.value = option.value;
+                    opt.textContent = option.text;
+                    citySelect.appendChild(opt);
+                });
+            } else if (this.value === '上海市') {
+                const cityOptions = [
+                    { value: '', text: '请选择' },
+                    { value: '上海市', text: '上海市' }
+                ];
+                
+                cityOptions.forEach(option => {
+                    const opt = document.createElement('option');
+                    opt.value = option.value;
+                    opt.textContent = option.text;
+                    citySelect.appendChild(opt);
+                });
+            } else if (this.value === '广东省') {
+                const cityOptions = [
+                    { value: '', text: '请选择' },
+                    { value: '广州市', text: '广州市' },
+                    { value: '深圳市', text: '深圳市' },
+                    { value: '东莞市', text: '东莞市' }
+                ];
+                
+                cityOptions.forEach(option => {
+                    const opt = document.createElement('option');
+                    opt.value = option.value;
+                    opt.textContent = option.text;
+                    citySelect.appendChild(opt);
+                });
+            } else if (this.value) {
+                // 其他省份默认
+                const opt = document.createElement('option');
+                opt.value = this.value;
+                opt.textContent = this.value;
+                citySelect.appendChild(opt);
+            }
+        });
+
+        // 城市变更联动
+        citySelect.addEventListener('change', function() {
+            districtSelect.innerHTML = '';
+
+            if (this.value === '北京市') {
+                const districtOptions = [
+                    { value: '', text: '请选择' },
+                    { value: '东城区', text: '东城区' },
+                    { value: '西城区', text: '西城区' },
+                    { value: '海淀区', text: '海淀区' },
+                    { value: '朝阳区', text: '朝阳区' }
+                ];
+                
+                districtOptions.forEach(option => {
+                    const opt = document.createElement('option');
+                    opt.value = option.value;
+                    opt.textContent = option.text;
+                    districtSelect.appendChild(opt);
+                });
+            } else if (this.value === '广州市') {
+                const districtOptions = [
+                    { value: '', text: '请选择' },
+                    { value: '天河区', text: '天河区' },
+                    { value: '越秀区', text: '越秀区' },
+                    { value: '海珠区', text: '海珠区' }
+                ];
+                
+                districtOptions.forEach(option => {
+                    const opt = document.createElement('option');
+                    opt.value = option.value;
+                    opt.textContent = option.text;
+                    districtSelect.appendChild(opt);
+                });
+            } else if (this.value) {
+                // 其他城市默认
+                const opt = document.createElement('option');
+                opt.value = this.value;
+                opt.textContent = this.value;
+                districtSelect.appendChild(opt);
+            }
+        });
+
+        // 5. 信用代码格式校验（示例：统一社会信用代码18位）
+        const creditCodeType = document.getElementById('creditCodeType');
+        const creditCode = document.getElementById('creditCode');
+
+        creditCodeType.addEventListener('change', function() {
+            creditCode.value = '';
+            creditCode.placeholder = '请输入对应类型的信用代码';
+            
+            if (this.value === '01') {
+                creditCode.placeholder = '统一社会信用代码为18位';
+            } else if (this.value === '02') {
+                creditCode.placeholder = '身份证号码为18位';
+            }
+        });
+
+        // 6. 表单提交验证
+        const supplierForm = document.getElementById('supplierForm');
+        
+        supplierForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            let isValid = true;
+
+            // 验证所有必填项
+            document.querySelectorAll('.form-label-required').forEach(label => {
+                const formItem = label.closest('.form-item, .form-item-full');
+                const input = formItem.querySelector('input, select, textarea');
+                const errorText = formItem.querySelector('.form-error-text');
+
+                // 清空之前的错误状态
+                input.classList.remove('form-input-error', 'form-select-error', 'form-textarea-error');
+                errorText.classList.remove('show');
+
+                // 验证逻辑
+                if (!input.value.trim()) {
+                    isValid = false;
+                    input.classList.add(input.tagName === 'INPUT' ? 'form-input-error' : input.tagName === 'SELECT' ? 'form-select-error' : 'form-textarea-error');
+                    errorText.classList.add('show');
+                }
+
+                // 特殊验证：信用代码格式
+                if (input.id === 'creditCode' && creditCodeType.value === '01' && input.value.trim().length !== 18) {
+                    isValid = false;
+                    input.classList.add('form-input-error');
+                    errorText.textContent = '统一社会信用代码必须为18位';
+                    errorText.classList.add('show');
+                }
+
+                // 特殊验证：禁用说明
+                if (riskLevelSelect.value === '2' && disableReasonItem.querySelector('textarea').value.trim() === '') {
+                    isValid = false;
+                    const disableTextarea = disableReasonItem.querySelector('textarea');
+                    const disableError = disableReasonItem.querySelector('.form-error-text');
+                    disableTextarea.classList.add('form-textarea-error');
+                    disableError.classList.add('show');
+                }
+
+                // 特殊验证：业务类型至少选一个
+                const businessTypeChecked = Array.from(businessTypeCheckboxes).some(cb => cb.checked);
+                const businessTypeError = document.querySelector('.checkbox-group + .form-error-text');
+                
+                if (!businessTypeChecked) {
+                    isValid = false;
+                    businessTypeError.classList.add('show');
+                } else {
+                    businessTypeError.classList.remove('show');
+                }
+            });
+
+            if (isValid) {
+                // 验证通过，提交表单
+                alert('表单验证通过，正在提交审核...');
+                // 这里可添加AJAX提交逻辑
+            } else {
+                // 验证失败，滚动到第一个错误项
+                const firstError = document.querySelector('.form-input-error, .form-select-error, .form-textarea-error');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+
+        // 7. 文件上传点击触发（示例）
+        document.querySelectorAll('.upload-area').forEach(area => {
+            const fileInput = area.querySelector('input[type="file"]');
+            
+            area.addEventListener('click', function() {
+                fileInput.click();
+            });
+
+            // 文件选择后处理（示例）
+            fileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    // 这里可添加文件上传逻辑
+                    console.log('选择的文件：', this.files);
+                    alert(`已选择 ${this.files.length} 个文件，准备上传...`);
+                }
+            });
+        });
+
+        // 8. 删除已上传文件（示例）
+        document.querySelectorAll('.upload-file-actions button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (confirm('确定要删除该文件吗？')) {
+                    this.closest('.upload-file-item').remove();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
